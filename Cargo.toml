@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 sodiumoxide = "0.2.2"
 structopt = "0.2.18"
+bs58 = "0.2.2"

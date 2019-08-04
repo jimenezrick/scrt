@@ -10,7 +10,11 @@ use structopt::StructOpt;
 #[structopt(author = "")]
 enum Opt {
     #[structopt(name = "hash")]
-    Hash { path: PathBuf },
+    Hash {
+        path: PathBuf,
+        #[structopt(short = "s", long = "short")]
+        short: bool,
+    },
     #[structopt(name = "verify")]
     Verify { path: PathBuf },
 }
@@ -43,15 +47,19 @@ fn main() -> io::Result<()> {
     println!("{:?}", opt);
 
     match opt {
-        Opt::Hash { path } => {
+        Opt::Hash { path, short } => {
             let f = File::open(path)?;
             let digest = hash(io::BufReader::new(f))?;
-            let digest_hex = digest
-                .as_ref()
-                .iter()
-                .map(|b| format!("{:02x}", b))
-                .collect::<String>();
-            println!("{}", digest_hex);
+            if short {
+                println!("{}", bs58::encode(digest).into_string());
+            } else {
+                let digest_hex = digest
+                    .as_ref()
+                    .iter()
+                    .map(|b| format!("{:02x}", b))
+                    .collect::<String>();
+                println!("{}", digest_hex);
+            }
         }
         _ => (),
     }
