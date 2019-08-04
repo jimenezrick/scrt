@@ -1,0 +1,9 @@
+[package]
+name = "scrt"
+version = "0.1.0"
+authors = ["Ricardo Catalinas Jiménez <r@untroubled.be>"]
+edition = "2018"
+
+[dependencies]
+sodiumoxide = "0.2.2"
+structopt = "0.2.18"
