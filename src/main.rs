@@ -16,11 +16,11 @@ enum Opt {
 }
 
 fn hash<R: io::Read>(reader: R) -> io::Result<sodiumoxide::crypto::hash::Digest> {
-    let buf_size = 4096 * 4;
+    let buf_size = 8 * 1024;
     let mut buf: Vec<u8> = Vec::with_capacity(buf_size);
-
     let mut hash_state = sodiumoxide::crypto::hash::State::new();
     let mut limited_reader = reader.take(buf_size as u64);
+
     loop {
         match limited_reader.read_to_end(&mut buf) {
             Ok(0) => break,
@@ -46,8 +46,12 @@ fn main() -> io::Result<()> {
         Opt::Hash { path } => {
             let f = File::open(path)?;
             let digest = hash(io::BufReader::new(f))?;
-
-            println!("{:x?}", digest.as_ref());
+            let digest_hex = digest
+                .as_ref()
+                .iter()
+                .map(|b| format!("{:02x}", b))
+                .collect::<String>();
+            println!("{}", digest_hex);
         }
         _ => (),
     }
