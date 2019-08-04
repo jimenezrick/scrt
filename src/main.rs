@@ -1,7 +1,6 @@
-use std::fs::File;
-use std::io;
-use std::io::Read;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::{fs, fs::File};
+use std::{io, io::Read};
 
 use sodiumoxide;
 use structopt::StructOpt;
@@ -9,14 +8,32 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(author = "")]
 enum Opt {
+    #[structopt(name = "gen-key-pair")]
+    GenKeyPair {
+        #[structopt(short = "f", long = "force")]
+        force: bool,
+    },
+
     #[structopt(name = "hash")]
     Hash {
-        path: PathBuf,
         #[structopt(short = "s", long = "short")]
         short: bool,
+
+        path: PathBuf,
     },
+
     #[structopt(name = "verify")]
     Verify { path: PathBuf },
+}
+
+fn write_new_key_pair(force: bool) -> io::Result<()> {
+    if !force && (Path::new("key.pub").exists() || Path::new("key.sec").exists()) {
+        eprintln!("Error: can't overwrite existing key pair");
+    }
+    let (pub_key, sec_key) = sodiumoxide::crypto::sign::gen_keypair();
+    fs::write("key.pub", bs58::encode(pub_key).into_string() + "\n")?;
+    fs::write("key.sec", bs58::encode(sec_key).into_string() + "\n")?;
+    Ok(())
 }
 
 fn hash<R: io::Read>(reader: R) -> io::Result<sodiumoxide::crypto::hash::Digest> {
@@ -47,6 +64,7 @@ fn main() -> io::Result<()> {
     println!("{:?}", opt);
 
     match opt {
+        Opt::GenKeyPair { force } => write_new_key_pair(force)?,
         Opt::Hash { path, short } => {
             let f = File::open(path)?;
             let digest = hash(io::BufReader::new(f))?;
