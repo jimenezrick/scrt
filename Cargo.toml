@@ -1,5 +1,5 @@
 [package]
-name = "scrt"
+name = "secutil"
 version = "0.1.0"
 authors = ["Ricardo Catalinas Jiménez <r@untroubled.be>"]
 edition = "2018"
